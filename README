@@ -2,6 +2,8 @@
 Implementations of algorithms introduced and/or related to the course
 "Computational Geometry" attended in the fall semester 2015 at SDU, Denmark.
 
+[SDL](http://www.libsdl.org) is used for visualizations.
+
 ## Topics
 
  - Convex hull
