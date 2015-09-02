@@ -4,7 +4,6 @@
 #define WINDOW_WIDTH  800
 #define WINDOW_HEIGHT 640
 
-
 SDL_Window *window = NULL;
 SDL_Surface *screen = NULL;
 SDL_Event event;
