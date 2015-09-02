@@ -1,7 +1,7 @@
 CFLAGS = -Wall -std=c99 -pedantic
-LFLAGS = -lSDL2
-OBJS = sdltest.o
-PROG = sdltest
+LFLAGS = -lSDL2 -lm
+OBJS = convexhull.o
+PROG = convexhull
 CXX = gcc
 
 %.o: %.c %.h
@@ -16,7 +16,7 @@ $(PROG): $(OBJS)
 # Phony targets
 .PHONY: clean
 clean:
-	rm -f *.o *.out
+	rm -f *.o *.out $(PROG)
 
 disinfect:
-	rm -f *.o *.out $(PROG)
+	rm -f *.o *.out
