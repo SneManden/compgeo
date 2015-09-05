@@ -40,6 +40,7 @@ void drawConvexHull(SDL_Renderer *renderer, struct circleq *chull) {
     SDL_Rect *u, *v;
     for (p=chull->cqh_first; p->entries.cqe_next!=(void*)chull; p=p->entries.cqe_next) {
         u = p->rect;
+        // Distinguish convex-hull-defining points
         SDL_RenderFillRect(renderer, u);
         v = p->entries.cqe_next->rect;
         SDL_RenderDrawLine(renderer,
@@ -52,11 +53,6 @@ void drawConvexHull(SDL_Renderer *renderer, struct circleq *chull) {
     SDL_RenderDrawLine(renderer,
         u->x+u->w/2, u->y+u->h/2,
         v->x+v->w/2, v->y+v->h/2);
-    // Distinguish convex-hull-defining points
-    SDL_SetRenderDrawColor(renderer, 0, 0, 255, SDL_ALPHA_OPAQUE); // blue
-    for (p=chull->cqh_first; p!=(void*)chull; p=p->entries.cqe_next) {
-        SDL_RenderFillRect(renderer, p->rect);
-    }
 }
 
 void printUsage(void) {
@@ -133,6 +129,7 @@ int main(int argc, char **argv) {
     }
 
     // Quit and free resources
+    // TODO: free lists too
     free(points);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
