@@ -1,25 +1,25 @@
-PROG = convexhull linsegintersect
-# SFML and C++
+OBJS = convexhull.o linsegintersect.o
+# C++
 CPPFLAGS = -Wall
-LPPFLAGS = -lsfml-graphics -lsfml-window -lsfml-audio -lsfml-network -lsfml-system
-# SDL and C
+LPPFLAGS = -lm
+# C
 CFLAGS = -Wall -std=c99 -pedantic
-LFLAGS = -lSDL2 -lm
+LFLAGS = -lm
 
-# SFML and C++
-%: %.cpp
-	g++ $(CPPFLAGS) -c $@.cpp
-	g++ -o $@ $@.o $(LPPFLAGS)
+all: $(OBJS)
 
-# SDL and C
-%: %.c
-	gcc $(CFLAGS) -c $@.c
-	gcc -o $@ $@.o $(LFLAGS)
+# C++
+%.o: %.cpp
+	g++ $(CPPFLAGS) -c $<
+
+# C
+%.o: %.c
+	gcc $(CFLAGS) -c $<
 
 # Phony targets
 .PHONY: clean
 clean:
-	rm -f *.o *.out $(PROG)
+	rm -f *.o
 
 disinfect:
-	rm -f *.o *.out
+	rm -f *.o
