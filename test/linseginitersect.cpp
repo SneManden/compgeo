@@ -65,7 +65,7 @@ int main(int argc, char **argv) {
                 window.close();
         }
         // :: Update start
-        t = inc(t);
+        t = 0.1;
         x = WINDOW_WIDTH -150 + 50*cos(t);
         y = WINDOW_HEIGHT-150 + 50*sin(t);
         linseg.movePoint(1, sf::Vector2f(x, y));
