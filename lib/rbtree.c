@@ -87,20 +87,19 @@ RBNode *RBtreePredecessor(RBTree *T, RBNode *x) {
 }
 
 void RBleftRotate(RBTree *T, RBNode *x) {
-    RBNode *y = x->right;
-    x->right = y->left;
-    if (x->right != T->nil)
+    RBNode *y = x->right;       // set y
+    x->right = y->left;         // turn y's left subtree into x's subtree
+    if (y->left != T->nil)
         x->right->p = x;
-    y->p = x->p;
+    y->p = x->p;                // link x's parent to y
     if (x->p == T->nil)
         T->root = y;
     else if (x == x->p->left)
         x->p->left = y;
     else
         x->p->right = y;
-    y->left = x;
+    y->left = x;                // put x on y's left
     x->p = y;
-
     assert( T->nil->color != RED );
 }
 
@@ -108,9 +107,9 @@ void RBrightRotate(RBTree *T, RBNode *y) {
     RBNode *x = y->left;
     y->left = x->right;
     if (x->right != T->nil)
-        x->right->p = y;
+        y->left->p = y;
     x->p = y->p;
-    if (x->p == T->nil)
+    if (y->p == T->nil)
         T->root = x;
     else if (y == y->p->left)
         y->p->left = x;
@@ -118,7 +117,6 @@ void RBrightRotate(RBTree *T, RBNode *y) {
         y->p->right = x;
     x->right = y;
     y->p = x;
-
     assert( T->nil->color != RED );
 }
 
@@ -151,13 +149,18 @@ void RBinsertFixup(RBTree *T, RBNode *z) {
         if (z->p == z->p->p->left) {
             y = z->p->p->right;
             if (y->color == RED) {
+                // case 1
                 z->p->color = BLACK;
                 y->color = BLACK;
                 z->p->p->color = RED;
                 z = z->p->p;
-            } else if (z == z->p->right) {
-                z = z->p;
-                RBleftRotate(T, z);
+            } else {
+                if (z == z->p->right) {
+                    // case 2
+                    z = z->p;
+                    RBleftRotate(T, z);
+                }
+                // case 3
                 z->p->color = BLACK;
                 z->p->p->color = RED;
                 RBrightRotate(T, z->p->p);
@@ -165,16 +168,21 @@ void RBinsertFixup(RBTree *T, RBNode *z) {
         } else {
             y = z->p->p->left;
             if (y->color == RED) {
+                // case 1
                 z->p->color = BLACK;
                 y->color = BLACK;
                 z->p->p->color = RED;
                 z = z->p->p;
-            } else if (z == z->p->left) {
-                z = z->p;
-                RBleftRotate(T, z);
+            } else {
+                if (z == z->p->left) {
+                    // case 2
+                    z = z->p;
+                    RBrightRotate(T, z);
+                }
+                // case 3
                 z->p->color = BLACK;
                 z->p->p->color = RED;
-                RBrightRotate(T, z->p->p);
+                RBleftRotate(T, z->p->p);
             }
         }
     }
@@ -226,19 +234,24 @@ void RBdeleteFixup(RBTree *T, RBNode *x) {
         if (x == x->p->left) {
             RBNode *w = x->p->right;
             if (w->color == RED) {
+                // case 1
                 w->color = BLACK;
                 x->p->color = RED;
                 RBleftRotate(T, x->p);
                 w = x->p->right;
             }
             if (w->left->color == BLACK && w->right->color == BLACK) {
+                // case 2
                 w->color = RED;
                 x = x->p;
-            } else if (w->right->color == BLACK) {
-                w->left->color = BLACK;
-                w->color = RED;
-                RBrightRotate(T, w);
-                w = x->p->right;
+            } else {
+                if (w->right->color == BLACK) {
+                    // case 3
+                    w->left->color = BLACK;
+                    w->color = RED;
+                    RBrightRotate(T, w);
+                    w = x->p->right;
+                }
                 // case 4
                 w->color = x->p->color;
                 x->p->color = BLACK;
@@ -249,19 +262,24 @@ void RBdeleteFixup(RBTree *T, RBNode *x) {
         } else {
             RBNode *w = x->p->left;
             if (w->color == RED) {
+                // case 1
                 w->color = BLACK;
                 x->p->color = RED;
                 RBrightRotate(T, x->p);
                 w = x->p->left;
             }
             if (w->right->color == BLACK && w->left->color == BLACK) {
+                // case 2
                 w->color = RED;
                 x = x->p;
-            } else if (w->left->color == BLACK) {
-                w->right->color = BLACK;
-                w->color = RED;
-                RBleftRotate(T, w);
-                w = x->p->left;
+            } else {
+                if (w->left->color == BLACK) {
+                    // case 3
+                    w->right->color = BLACK;
+                    w->color = RED;
+                    RBleftRotate(T, w);
+                    w = x->p->left;
+                }
                 // case 4
                 w->color = x->p->color;
                 x->p->color = BLACK;
