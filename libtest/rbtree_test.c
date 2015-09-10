@@ -13,11 +13,11 @@ int main(int argc, char **argv) {
     printf("Creating empty RB tree\n");
     RBTree *tree = RBinit();
 
-    int k;
+    int i, k;
     char *fname = malloc(sizeof(char)*22);
     // Insert #nodes nodes
-    for (int i=0; i<nodes; i++) {
-        snprintf(fname, 22, "tree_insert_%05d.dot", i);
+    for (i=0; i<nodes; i++) {
+        snprintf(fname, 22, "tree_%05d.dot", i);
         RBwriteTree(tree, fname);
 
         k = rand() % (nodes*10+13);
@@ -27,16 +27,14 @@ int main(int argc, char **argv) {
     // Legal RB tree?
     printf("Is the tree a RedBlack search tree?\n");
     printf("  => %s\n", (RBisRBTree(tree) ? "YES" : "NO"));
-    // Print tree
-    RBwriteTree(tree, "tree_final.dot");
+    // Print final tree
+    snprintf(fname, 22, "tree_%05d.dot", i);
+    RBwriteTree(tree, fname);
     // Remove all nodes
     printf("Removing all nodes in the tree:\n");
     RBNode *x;
     int n;
     for (n=0; !RBisEmpty(tree); n++) {
-        snprintf(fname, 22, "tree_remove_%05d.dot", n);
-        RBwriteTree(tree, fname);
-
         x = RBtreeMinimum(tree, tree->root);
         printf("  removing node with key %d\n", x->key);
         RBdelete(tree, x);
