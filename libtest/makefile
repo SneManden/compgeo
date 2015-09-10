@@ -5,8 +5,11 @@ LPPFLAGS = -lm
 # SDL and C
 CFLAGS = -Wall -std=c99 -pedantic
 LFLAGS = -lm
+# dot/png files
+DOTFILES = $(wildcard *.dot)
+PNGFILES = $(patsubst %.dot,%.png,$(DOTFILES))
 
-all: $(PROG)
+all: $(PROG) $(PNGFILES)
 
 # SDL and C
 rbtree_heads = ../lib/rbtree.h
@@ -16,10 +19,10 @@ rbtree_deps = rbtree_test.o ../lib/rbtree.o
 rbtree_test: $(rbtree_deps)
 	gcc -o $@ $(rbtree_deps) $(LFLAGS)
 
+%.png: %.dot tree.gv
+	dot $*.dot | gvpr -c -ftree.gv | neato -n -Tpng -o $*.png
+
 # Phony targets
 .PHONY: clean
 clean:
-	rm -f *.o $(PROG)
-
-disinfect:
-	rm -f *.o
+	rm -f *.o $(PROG) $(DOTFILES) $(PNGFILES)
