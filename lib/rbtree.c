@@ -10,7 +10,7 @@ void RBinsertFixup(RBTree *T, RBNode *z);
 void RBtransplant(RBTree *T, RBNode *u, RBNode *v);
 void RBdeleteFixup(RBTree *T, RBNode *x);
 
-static nilnum = 0;
+static int nilnum = 0;
 
 RBTree *RBinit() {
     RBNode *nil = malloc(sizeof(RBNode));
@@ -88,6 +88,11 @@ RBNode *RBtreePredecessor(RBTree *T, RBNode *x) {
 
 void RBleftRotate(RBTree *T, RBNode *x) {
     RBNode *y = x->right;       // set y
+    // make sure operation is correct
+    RBNode *alpha = x->left,
+            *beta = y->left,
+           *gamma = y->right;
+
     x->right = y->left;         // turn y's left subtree into x's subtree
     if (y->left != T->nil)
         x->right->p = x;
@@ -100,11 +105,23 @@ void RBleftRotate(RBTree *T, RBNode *x) {
         x->p->right = y;
     y->left = x;                // put x on y's left
     x->p = y;
+
+    // make sure operation is correct
     assert( T->nil->color != RED );
+    if (x != T->root)
+        assert( x == x->p->left );  // x should be a left child
+    assert( alpha == x->left ); // alpha should be x's left  child
+    assert(  beta == x->right); //  beta should be x's right child
+    assert( gamma == y->right); // gamma should be y's right child
 }
 
 void RBrightRotate(RBTree *T, RBNode *y) {
     RBNode *x = y->left;
+    // make sure operation is correct
+    RBNode *alpha = x->left,
+            *beta = x->right,
+           *gamma = y->right;
+
     y->left = x->right;
     if (x->right != T->nil)
         y->left->p = y;
@@ -117,7 +134,14 @@ void RBrightRotate(RBTree *T, RBNode *y) {
         y->p->right = x;
     x->right = y;
     y->p = x;
+
+    // make sure operation is correct
     assert( T->nil->color != RED );
+    if (x != T->root)
+        assert( y == y->p->right ); // y should be a right child
+    assert( alpha == x->left ); // alpha should be x's left  child
+    assert(  beta == y->left ); //  beta should be y's left  child
+    assert( gamma == y->right); // gamma should be y's right child
 }
 
 void RBinsert(RBTree *T, RBNode *z) {
@@ -144,12 +168,17 @@ void RBinsert(RBTree *T, RBNode *z) {
 }
 
 void RBinsertFixup(RBTree *T, RBNode *z) {
+    printf("  RBinsertFixup(T, z{%d})\n", z->key);
     RBNode *y;
+    printf("    z->p{%d} has color %s\n", z->p->key,
+        (z->p->color==RED?"RED":"BLACK"));
     while (z->p->color == RED) {
         if (z->p == z->p->p->left) {
+            printf("    z->p is a left child:\n");
             y = z->p->p->right;
             if (y->color == RED) {
                 // case 1
+                printf("      (case %d) [z{%d}]\n", 1, z->key);
                 z->p->color = BLACK;
                 y->color = BLACK;
                 z->p->p->color = RED;
@@ -157,18 +186,22 @@ void RBinsertFixup(RBTree *T, RBNode *z) {
             } else {
                 if (z == z->p->right) {
                     // case 2
+                    printf("      (case %d) [z{%d}]\n", 2, z->key);
                     z = z->p;
                     RBleftRotate(T, z);
                 }
                 // case 3
+                printf("      (case %d) [z{%d}]\n", 3, z->key);
                 z->p->color = BLACK;
                 z->p->p->color = RED;
                 RBrightRotate(T, z->p->p);
             }
         } else {
+            printf("    z->p is a right child:\n");
             y = z->p->p->left;
             if (y->color == RED) {
                 // case 1
+                printf("      (case %d) [z{%d}]\n", 1, z->key);
                 z->p->color = BLACK;
                 y->color = BLACK;
                 z->p->p->color = RED;
@@ -176,10 +209,12 @@ void RBinsertFixup(RBTree *T, RBNode *z) {
             } else {
                 if (z == z->p->left) {
                     // case 2
+                    printf("      (case %d) [z{%d}]\n", 2, z->key);
                     z = z->p;
                     RBrightRotate(T, z);
                 }
                 // case 3
+                printf("      (case %d) [z{%d}]\n", 3, z->key);
                 z->p->color = BLACK;
                 z->p->p->color = RED;
                 RBleftRotate(T, z->p->p);
@@ -323,13 +358,12 @@ int RBeachRedNodeHasBlackChildren(RBTree *T) {
 // Assumes leaves are black (i.e. RBeachLeafIsBlack == true)
 int RBsubtreePathsHasEqualLength(RBTree *T, RBNode *x, int plen) {
     if (RBisLeaf(T, x))
-        return plen+1;
+        return 1;
+
     int isBlack = RBhasColor(x, BLACK),
-        left = plen, right = plen;
-    if (RBhasLeft(T, x))
-        left = RBsubtreePathsHasEqualLength(T, x->left, plen+isBlack);
-    if (RBhasRight(T, x))
+        left = RBsubtreePathsHasEqualLength(T, x->left, plen+isBlack),
         right = RBsubtreePathsHasEqualLength(T, x->right, plen+isBlack);
+
     return left == right;
 }
 int RBeachRootLeafPathHasEqualLength(RBTree *T) {
@@ -338,35 +372,44 @@ int RBeachRootLeafPathHasEqualLength(RBTree *T) {
 
 int RBisRBTree(RBTree *T) {
     int ok = (T->root->color == BLACK); // root should be black
-    printf("  (the root is black)\n");
+    if (ok) printf("  OK: the root is black\n");
+    else    printf("  FAIL: the root is red\n");
     // Each leaf should be black
     ok &= RBeachLeafIsBlack(T);
-    printf("  (Each leaf is black)\n");
+    if (ok) printf("  OK: Each leaf is black\n");
+    else    printf("  FAIL: leaves are not black\n");
     // Each red node should have black children
     ok &= RBeachRedNodeHasBlackChildren(T);
-    printf("  (Each red node has black children)\n");
+    if (ok) printf("  OK: Each red node has black children\n");
+    else    printf("  FAIL: There exists a red node with a red child\n");
     // Each path from root to leaf shall have same # black nodes
     ok &= RBeachRootLeafPathHasEqualLength(T);
-    printf("  (Each path from root to leaf has the same length)\n");
+    if (ok) printf("  OK: Each path from root to leaf has the same length\n");
+    else    printf("  FAIL: Not all paths from root to leaf has same length\n");
     return ok;
 }
 
 void RBwriteNil(FILE *fd, RBNode *x) {
     int id = nilnum++;
-    //fprintf(fd, "  n%d [label=nil color=black shape=box]\n", id);
-    //fprintf(fd, "  n%d -> n%d [label=nil color=black]\n", x->key, id);
+    fprintf(fd, "  nil%d [label=nil color=black shape=box width=0.25 height=0.25 fontsize=10]\n", id);
+    fprintf(fd, "  n%p -> nil%d\n", (void*)x, id);
 }
 void RBwriteTreeNode(FILE *fd, RBTree *T, RBNode *x) {
     if (x != T->nil) {
         // Print node
-        fprintf(fd, "  n%d [label=%d color=%s];\n",
-            x->key, x->key, (x->color==RED ? "firebrick":"black"));
+        fprintf(fd, "  n%p [label=%d color=%s];\n",
+            (void*)x, x->key, (x->color==RED ? "firebrick":"black"));
+        // left
         if (RBhasLeft(T, x))
-             fprintf(fd, "  n%d -> n%d\n", x->key, x->left->key);
-        else RBwriteNil(fd, x);
+            fprintf(fd, "  n%p -> n%p\n", (void*)x, (void*)x->left);
+        else
+            RBwriteNil(fd, x);
+        // right
         if (RBhasRight(T, x))
-             fprintf(fd, "  n%d -> n%d\n", x->key, x->right->key);
-        else RBwriteNil(fd, x);
+            fprintf(fd, "  n%p -> n%p\n", (void*)x, (void*)x->right);
+        else
+            RBwriteNil(fd, x);
+        // Recursive
         RBwriteTreeNode(fd, T, x->left);
         RBwriteTreeNode(fd, T, x->right);
     }
