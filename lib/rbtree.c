@@ -168,17 +168,12 @@ void RBinsert(RBTree *T, RBNode *z) {
 }
 
 void RBinsertFixup(RBTree *T, RBNode *z) {
-    printf("  RBinsertFixup(T, z{%d})\n", z->key);
     RBNode *y;
-    printf("    z->p{%d} has color %s\n", z->p->key,
-        (z->p->color==RED?"RED":"BLACK"));
     while (z->p->color == RED) {
         if (z->p == z->p->p->left) {
-            printf("    z->p is a left child:\n");
             y = z->p->p->right;
             if (y->color == RED) {
                 // case 1
-                printf("      (case %d) [z{%d}]\n", 1, z->key);
                 z->p->color = BLACK;
                 y->color = BLACK;
                 z->p->p->color = RED;
@@ -186,22 +181,18 @@ void RBinsertFixup(RBTree *T, RBNode *z) {
             } else {
                 if (z == z->p->right) {
                     // case 2
-                    printf("      (case %d) [z{%d}]\n", 2, z->key);
                     z = z->p;
                     RBleftRotate(T, z);
                 }
                 // case 3
-                printf("      (case %d) [z{%d}]\n", 3, z->key);
                 z->p->color = BLACK;
                 z->p->p->color = RED;
                 RBrightRotate(T, z->p->p);
             }
         } else {
-            printf("    z->p is a right child:\n");
             y = z->p->p->left;
             if (y->color == RED) {
                 // case 1
-                printf("      (case %d) [z{%d}]\n", 1, z->key);
                 z->p->color = BLACK;
                 y->color = BLACK;
                 z->p->p->color = RED;
@@ -209,12 +200,10 @@ void RBinsertFixup(RBTree *T, RBNode *z) {
             } else {
                 if (z == z->p->left) {
                     // case 2
-                    printf("      (case %d) [z{%d}]\n", 2, z->key);
                     z = z->p;
                     RBrightRotate(T, z);
                 }
                 // case 3
-                printf("      (case %d) [z{%d}]\n", 3, z->key);
                 z->p->color = BLACK;
                 z->p->p->color = RED;
                 RBleftRotate(T, z->p->p);
