@@ -10,9 +10,22 @@
 
 #include "rbtree.h"
 
-typedef RBTree RBLTree;
-typedef RBNode RBLNode;
 typedef RBColor RBLColor;
+
+typedef struct RBLNode {
+    int key;
+    void *data;
+    struct RBLNode *p; // parent
+    struct RBLNode *left;
+    struct RBLNode *right;
+    struct RBLNode *prev;
+    struct RBLNode *next;
+    RBColor color;
+} RBLNode;
+typedef struct RBLTree {
+    struct RBLNode *root;
+    RBLNode *nil;
+} RBLTree;
 
 // macros
 #define RBLisLeaf(T, x) ( (x) == (T)->nil )
@@ -20,6 +33,7 @@ typedef RBColor RBLColor;
 #define RBLhasRight(T, x) ( (x)->right != (T)->nil )
 #define RBLhasColor(x, col) ( (x)->color == col )
 #define RBLisEmpty(T) ( (T)->root == (T)->nil )
+#define RBLhasData(x) ( (x)->data != NULL )
 // Search tree operations
 RBLNode *RBLtreeSearch(RBLTree *T, RBLNode *x, int k);
 RBLNode *RBLtreeSearchIterative(RBLTree *T, RBLNode *x, int k);
