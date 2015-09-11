@@ -1,4 +1,4 @@
-PROG = rbtree_test
+PROG = rbtree_test rbltree_test
 # SFML and C++
 CPPFLAGS = -Wall
 LPPFLAGS = -lm
@@ -8,16 +8,24 @@ LFLAGS = -lm
 # dot/png files
 DOTFILES = $(wildcard *.dot)
 PNGFILES = $(patsubst %.dot,png/%.png,$(DOTFILES))
+# lib files
+rbtree_heads = ../lib/rbtree.h
+rbtree_deps = ../lib/rbtree.o
+rbltree_heads = ../lib/rbltree.h
+rbltree_deps = ../lib/rbltree.o
 
 all: $(PROG)
 
 # SDL and C
-rbtree_heads = ../lib/rbtree.h
-rbtree_deps = rbtree_test.o ../lib/rbtree.o
+../lib/%.o:
+	make -C ../lib
+
 %.o: %.c $(rbtree_heads)
 	gcc $(CFLAGS) -c $<
-rbtree_test: $(rbtree_deps)
-	gcc -o $@ $(rbtree_deps) $(LFLAGS)
+rbtree_test: rbtree_test.o $(rbtree_deps)
+	gcc -o $@ $@.o $(rbtree_deps) $(LFLAGS)
+rbltree_test: rbltree_test.o $(rbltree_deps) $(rbtree_deps)
+	gcc -o $@ $@.o $(rbltree_deps) $(rbtree_deps) $(LFLAGS)
 
 png/%.png: %.dot tree.gv pngdir
 	dot $*.dot | gvpr -c -ftree.gv | neato -n -Tpng -o png/$*.png

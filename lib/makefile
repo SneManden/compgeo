@@ -2,7 +2,7 @@ CFLAGS = -Wall -std=c99 -pedantic
 LFLAGS = -lm
 CXX = gcc
 
-all: rbtree.o
+all: rbtree.o rbltree.o
 
 %.o: %.c %.h
 	$(CXX) -c $<
