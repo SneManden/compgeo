@@ -17,8 +17,10 @@ rbltree_deps = ../lib/rbltree.o
 all: $(PROG)
 
 # SDL and C
-../lib/%.o:
-	make -C ../lib
+../lib/rbtree.o: ../lib/rbtree.h ../lib/rbtree.c
+	make -C ../lib ../lib/rbtree.o
+../lib/rbltree.o: ../lib/rbltree.h ../lib/rbltree.c
+	make -C ../lib ../lib/rbltree.o
 
 %.o: %.c $(rbtree_heads)
 	gcc $(CFLAGS) -c $<
@@ -35,6 +37,8 @@ pngdir:
 
 # Phony targets
 .PHONY: clean
+pngimages: $(DOTFILES) $(PNGFILES)
+
 resizepng: pngdir $(PNGFILES)
 	mogrify -background white -gravity center -extent 1920x540 png/*.png
 	mogrify -resize 960x600 png/*.png
