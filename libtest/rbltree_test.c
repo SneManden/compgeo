@@ -30,6 +30,18 @@ int main(int argc, char **argv) {
     // Print final tree
     snprintf(fname, 25, "rbltree_%05d.dot", i);
     RBLwriteTree(tree, fname);
+
+    // Remove all nodes
+    printf("Removing all nodes in the tree:\n");
+    RBLNode *x;
+    int n;
+    for (n=0; !RBLisEmpty(tree); n++) {
+        x = RBLtreeMinimum(tree, tree->root);
+        printf("  removing node with key %d\n", x->key);
+        RBLdelete(tree, x);
+        free(x);
+    }
+    printf("Removed %d nodes\n", n);
     
     free(tree);
 
