@@ -22,7 +22,7 @@ int main(int argc, char **argv) {
 
         k = rand() % (nodes*10+13);
         printf("Inserting a node with key %d\n", k);
-        RBinsert(tree, RBnewNode(k));
+        RBinsert(tree, RBnewNode(k, &k));
     }
     // Legal RB tree?
     printf("Is the tree a RedBlack search tree?\n");

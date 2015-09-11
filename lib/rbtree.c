@@ -26,10 +26,11 @@ RBTree *RBinit() {
     return T;
 }
 
-RBNode *RBnewNode(int key) {
+RBNode *RBnewNode(int key, void *data) {
     RBNode *x = malloc(sizeof(RBNode));
     if (x == NULL) return NULL;
     x->key = key;
+    x->data = data;
     return x;
 }
 

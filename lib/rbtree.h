@@ -5,6 +5,7 @@ typedef enum {RED, BLACK} RBColor;
 
 typedef struct RBNode {
     int key;
+    void *data;
     struct RBNode *p; // parent
     struct RBNode *left;
     struct RBNode *right;
@@ -31,15 +32,12 @@ RBNode *RBtreeSuccessor(RBTree *T, RBNode *x);
 RBNode *RBtreePredecessor(RBTree *T, RBNode *x);
 // common methods
 RBTree *RBinit();
-RBNode *RBnewNode(int key);
+RBNode *RBnewNode(int key, void *data);
 void RBinsert(RBTree *T, RBNode *z);
 void RBdelete(RBTree *T, RBNode *z);
 // testing methods
-int RBsubtreeHasOnlyBlackLeaves(RBTree *T, RBNode *x);
 int RBeachLeafIsBlack(RBTree *T);
-int RBsubtreeRedNodeHasBlackChildren(RBTree *T, RBNode *x);
 int RBeachRedNodeHasBlackChildren(RBTree *T);
-int RBsubtreePathsHasEqualLength(RBTree *T, RBNode *x, int plen);
 int RBeachRootLeafPathHasEqualLength(RBTree *T);
 int RBisRBTree(RBTree *T);
 // miscelanous
