@@ -8,6 +8,7 @@
  *     pointers to successor/predecessor leaves.
  */
 
+#include "util.h"
 #include "rbtree.h"
 
 typedef RBColor RBLColor;
