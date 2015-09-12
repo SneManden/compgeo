@@ -1,3 +1,4 @@
+#include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -52,6 +53,11 @@ int arrayMax(int *keys, int n) {
         max = (max > keys[i] ? max : keys[i]);
     return max;
 }
+// http://stackoverflow.com/a/5249150
+#define getTimeDiff(te, ts) ((double)(te - ts) / CLOCKS_PER_SEC)
+#define setTime(t) do { t = clock(); } while (0)
+#define printExecTime(tr, tp) \
+    printf("\tExecution time (sec): %.5f (prep: %.5f, total: %.5f)\n", tr, tp, tr+tp)
 
 /**
  * Verbose test (with printing of tree) of most parts of implementation:
@@ -314,13 +320,19 @@ int main(int argc, char **argv) {
         int *keys = NULL;
         int M = 0,
             j = 0;
+        clock_t t_start, t_end, t_prepstart, t_prepend;
+        double t_run, t_prep;
         for (int i=0; i<RUNSMAX; i++) {
             printf("    Tree-size %d:\n", M);
             // Prepare tests:
             keys = calloc(M, sizeof(int));
+            setTime(t_prepstart);
             tree = RBLinit();
             prepare_tests(tree, keys, M);
+            setTime(t_prepend);
+            t_prep = getTimeDiff(t_prepend, t_prepstart);
             // All normal tests here
+            setTime(t_start);
             tests[(j++)%NUM_TESTS_NORMAL] += test_insertRandom(M);
             tests[(j++)%NUM_TESTS_NORMAL] += test_search(tree, keys, M);
             tests[(j++)%NUM_TESTS_NORMAL] += test_searchIterative(tree, keys, M);
@@ -329,6 +341,9 @@ int main(int argc, char **argv) {
             tests[(j++)%NUM_TESTS_NORMAL] += test_successor(tree, keys, M);
             tests[(j++)%NUM_TESTS_NORMAL] += test_predecessor(tree, keys, M);
             tests[(j++)%NUM_TESTS_NORMAL] += test_linkedList(tree, keys, M);
+            setTime(t_end);
+            t_run = getTimeDiff(t_end, t_start);
+            printExecTime(t_run, t_prep);
             runs++;
             j = 0;
             // Done
@@ -348,7 +363,7 @@ int main(int argc, char **argv) {
     }
 
     printf("===============================\n");
-    printf("Performed %d tests:\n", testi*runs);
+    printf("Performed %d tests:\n", testi);
     printf("\t%3d failures\n", failures);
     printf("\t%3d succeses\n", succeses);
 
