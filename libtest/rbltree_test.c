@@ -10,16 +10,17 @@
 #define TE "\033[0m"
 
 #define NUM_TESTS_VERBOSE 1
-#define NUM_TESTS_NORMAL 7
+#define NUM_TESTS_NORMAL 8
 #define NODES_DEFAULT 25
+#define RUNSMAX 100
 
 int USE_COLORS = 1;
 
 #define THEAD(desc) do {                                        \
     if (USE_COLORS)                                             \
-        printf("\ttest: " TB "%-40s" TE "\n", desc);            \
+        printf("\ttest: " TB "%-40s" TE, desc);                 \
     else                                                        \
-        printf("\ttest: %-40s\n", desc);                        \
+        printf("\ttest: %-40s", desc);                          \
 } while (0)
 #define TFOOT(ok) do {                                          \
     if (USE_COLORS) {                                           \
@@ -38,18 +39,19 @@ int USE_COLORS = 1;
 
 // Utility functions
 int arrayMin(int *keys, int n) {
+    if (n == 0) return -1;
     int min = keys[0];
     for (int i=1; i<n; i++)
         min = (min < keys[i] ? min : keys[i]);
     return min;
 }
 int arrayMax(int *keys, int n) {
+    if (n == 0) return -1;
     int max = keys[0];
     for (int i=1; i<n; i++)
         max = (max > keys[i] ? max : keys[i]);
     return max;
 }
-
 
 /**
  * Verbose test (with printing of tree) of most parts of implementation:
@@ -163,12 +165,12 @@ int test_minimum(RBLTree *tree, int *keys, int n) {
     THEAD("Tree-minimum");
 
     int ok, min = arrayMin(keys, n);
-    RBLNode *x;
+    RBLNode *x = RBLtreeMinimum(tree, tree->root);
     if (n > 0) {
-        ok = ((x=RBLtreeMinimum(tree, tree->root))->key == min);
+        ok = (x->key == min);
         TERRORARG(ok, "Expected key %d, got %d\n", min, x->key);
     } else {
-        ok = ((x=RBLtreeMinimum(tree, tree->root)) == tree->nil);
+        ok = (x == tree->nil);
         TERROR(ok, "Expected nil-node\n");
     }
 
@@ -183,12 +185,12 @@ int test_maximum(RBLTree *tree, int *keys, int n) {
     THEAD("Tree-maximum");
 
     int ok, max = arrayMax(keys, n);
-    RBLNode *x;
+    RBLNode *x = RBLtreeMaximum(tree, tree->root);
     if (n > 0) {
-        ok = ((x=RBLtreeMaximum(tree, tree->root))->key == max);
+        ok = (x->key == max);
         TERRORARG(ok, "Expected key %d, got %d\n", max, x->key);
     } else {
-        ok = ((x=RBLtreeMaximum(tree, tree->root)) == tree->nil);
+        ok = (x == tree->nil);
         TERROR(ok, "Expected nil-node\n");
     }
 
@@ -236,6 +238,34 @@ int test_predecessor(RBLTree *tree, int *keys, int n) {
     return ok;
 }
 
+/**
+ * Tests that each leaf is connected to its leaf-predecessor and leaf-successor,
+ * including the minimum and maximum elements being connected
+ */
+int test_linkedList(RBLTree *tree, int *keys, int n) {
+    THEAD("Linked-list");
+
+    int ok = 1;
+    if (n == 0) {
+        TFOOT(ok);
+        return ok;
+    }
+
+    RBLNode *x = RBLtreeMinimum(tree, tree->root);
+    RBLNode *y = RBLtreeMaximum(tree, tree->root);
+    ok &= (x==y->next && y==x->prev);
+    TERRORARG(ok, "Expected min x{%d} and max y{%d} to be connected\n", x->key, y->key);
+    for (int i=0; i<n-1; i++) {
+        y = RBLtreeSuccessor(tree, x);
+        ok &= (x==y->prev && y==x->next);
+        TERRORARG(ok, "Expected x{%d} and y{%d} to be connected\n", x->key, y->key);
+        x = y;
+    }
+
+    TFOOT(ok);
+    return ok;
+}
+
 
 void prepare_tests(RBLTree *tree, int *keys, int n) {
     RBLNode *x;
@@ -263,52 +293,62 @@ int main(int argc, char **argv) {
         verbose = (strcmp(argv[2],"-v")==0 || !strcmp(argv[2],"-nv")==0);
     if (argc >= 4)
         USE_COLORS = (strcmp(argv[3],"-c")==0 || !strcmp(argv[3],"-nc")==0);
-    printf("Testing with N=%d...\n", N);
+    printf("Set: N=%d.\n", N);
     if (verbose)
         printf("Enabled: Verbose test.\n");
     if (!USE_COLORS)
         printf("Disabled: fancy colors for output.\n");
 
     int *tests;
-    printf("\n===============================\n");
+    printf("===============================\n");
     printf("Testing:\n");
+    int runs = 0;
     if (verbose) {
         tests = calloc(NUM_TESTS_VERBOSE, sizeof(int));
         // Verbose tests here
-        tests[testi++] = test_verbose(N);
-
-        // Done
-        assert(testi == NUM_TESTS_VERBOSE);
+        tests[0] = test_verbose(N);
+        testi = NUM_TESTS_VERBOSE;
     } else {
-        // Prepare some tests:
-        RBLTree *tree = RBLinit();
-        int *keys = calloc(N, sizeof(int));
-        prepare_tests(tree, keys, N);
-
         tests = calloc(NUM_TESTS_NORMAL, sizeof(int));
-        // All normal tests here
-        tests[testi++] = test_insertRandom(N);
-        tests[testi++] = test_search(tree, keys, N);
-        tests[testi++] = test_searchIterative(tree, keys, N);
-        tests[testi++] = test_minimum(tree, keys, N);
-        tests[testi++] = test_minimum(tree, keys, N);
-        tests[testi++] = test_successor(tree, keys, N);
-        tests[testi++] = test_predecessor(tree, keys, N);
-
-        // Done
-        cleanup_tests(tree, keys, N);
-        assert(testi == NUM_TESTS_NORMAL);
+        RBLTree *tree = NULL;
+        int *keys = NULL;
+        int M = 0,
+            j = 0;
+        for (int i=0; i<RUNSMAX; i++) {
+            printf("    Tree-size %d:\n", M);
+            // Prepare tests:
+            keys = calloc(M, sizeof(int));
+            tree = RBLinit();
+            prepare_tests(tree, keys, M);
+            // All normal tests here
+            tests[(j++)%NUM_TESTS_NORMAL] += test_insertRandom(M);
+            tests[(j++)%NUM_TESTS_NORMAL] += test_search(tree, keys, M);
+            tests[(j++)%NUM_TESTS_NORMAL] += test_searchIterative(tree, keys, M);
+            tests[(j++)%NUM_TESTS_NORMAL] += test_minimum(tree, keys, M);
+            tests[(j++)%NUM_TESTS_NORMAL] += test_minimum(tree, keys, M);
+            tests[(j++)%NUM_TESTS_NORMAL] += test_successor(tree, keys, M);
+            tests[(j++)%NUM_TESTS_NORMAL] += test_predecessor(tree, keys, M);
+            tests[(j++)%NUM_TESTS_NORMAL] += test_linkedList(tree, keys, M);
+            runs++;
+            j = 0;
+            // Done
+            cleanup_tests(tree, keys, M);
+            M = (M==0 ? 1 : 2*M);
+            if (M > N)
+                break;
+        }
+        testi = NUM_TESTS_NORMAL;
     }
     int failures=0, succeses=0;
     int success;
     for (int i=0; i<testi; i++) {
         success = tests[i];
-        failures += !success;
+        failures += (runs - success);
         succeses += success;
     }
 
     printf("===============================\n");
-    printf("Performed %d tests:\n", testi);
+    printf("Performed %d tests:\n", testi*runs);
     printf("\t%3d failures\n", failures);
     printf("\t%3d succeses\n", succeses);
 
