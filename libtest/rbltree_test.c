@@ -67,29 +67,83 @@ int test_verbose(int nodes) {
 int test_insertRandom(int nodes) {
     test_header("Insertion of nodes");
 
-    int ok = 0;
+    int ok = 1;
     RBLTree *tree = RBLinit();
     int i, k;
     for (i=0; i<nodes; i++) {
         k = rand() % (nodes*nodes+1);
         RBLinsert(tree, RBLnewNode(k, &k));
+        ok &= RBLisRBLTree(tree);
     }
-    ok = RBLisRBLTree(tree);
     RBLtreeDestroy(tree); // Not part of test
     
     test_footer(ok);
     return ok;
 }
 
+/**
+ * Tests RBLtreeSearch: for a given tree and an array of the values in the tree,
+ * it runs through each key-value and checks that there is a node with the key.
+ */
+int test_search(RBLTree *tree, int *keys, int n) {
+    test_header("Tree-search");
+    assert(tree != NULL);
+    assert(keys != NULL);
+
+    int ok = 1;
+    RBLNode *x;
+    for (int i=0; i<n; i++) {
+        x = RBLtreeSearch(tree, keys[i]);
+        ok &= (x != tree->nil);
+    }
+
+    test_footer(ok);
+    return ok;
+}
+
+/**
+ * Tests RBLtreeSearch (iterative version)
+ */
+int test_searchIterative(RBLTree *tree, int *keys, int n) {
+    test_header("Tree-search (iterative)");
+
+    int ok = 1;
+    RBLNode *x;
+    for (int i=0; i<n; i++) {
+        x = RBLtreeSearchIterative(tree, keys[i]);
+        ok &= (x != tree->nil);
+    }
+
+    test_footer(ok);
+    return ok;
+}
+
+void prepare_tests(RBLTree **tree, int **keys, int n) {
+    *tree = RBLinit();
+    *keys = calloc(n, sizeof(int));
+    for (int i=0; i<n; i++) {
+        *keys[i] = rand() % (n*n);
+        RBLinsert(*tree, RBLnewNode(*keys[i], &*keys[i]));
+    }
+}
+
+void cleanup_tests(RBLTree *tree, int *keys, int n) {
+    RBLtreeDestroy(tree);
+    free(keys);
+}
+
+/**
+ * RUN ALL TESTS
+ */
 int main(int argc, char **argv) {
     int testi = 0;
-    int nodes = NODES_DEFAULT,
+    int N = NODES_DEFAULT,
         verbose = 0;
     if (argc >= 2)
-        nodes = atoi(argv[1]);
+        N = atoi(argv[1]);
     if (argc >= 3)
         verbose = (strcmp(argv[2], "-v") == 0);
-    printf("Testing with nodes=%d nodes...\n", nodes);
+    printf("Testing with N=%d...\n", N);
     if (verbose)
         printf("Verbose test activated.\n");
 
@@ -99,14 +153,23 @@ int main(int argc, char **argv) {
     if (verbose) {
         tests = calloc(NUM_TESTS_VERBOSE, sizeof(int));
         // Verbose tests here
-        tests[testi++] = test_verbose(nodes);
+        tests[testi++] = test_verbose(N);
 
         // Done
         assert(testi == NUM_TESTS_VERBOSE);
     } else {
+        // Prepare some tests:
+        RBLTree *tree = NULL;
+        int *keys = NULL;
+        prepare_tests(&tree, &keys, N);
+
         tests = calloc(NUM_TESTS_NORMAL, sizeof(int));
         // All normal tests here
-        tests[testi++] = test_insertRandom(nodes);
+        tests[testi++] = test_insertRandom(N);
+        tests[testi++] = test_search(tree, keys, N);
+        tests[testi++] = test_searchIterative(tree, keys, N);
+
+        cleanup_tests(tree, keys, N);
 
         // Done
         assert(testi == NUM_TESTS_NORMAL);
