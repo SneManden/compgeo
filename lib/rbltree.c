@@ -36,12 +36,12 @@ RBLNode *RBLtreeSearchIterative(RBLTree *T, int k) {
     return x;
 }
 RBLNode *RBLtreeMinimum(RBLTree *T, RBLNode *x) {
-    while (x->left != T->nil)
+    while (x != T->nil && x->left != T->nil)
         x = x->left;
     return x;
 }
 RBLNode *RBLtreeMaximum(RBLTree *T, RBLNode *x) {
-    while (x->right != T->nil)
+    while (x != T->nil && x->right != T->nil)
         x = x->right;
     return x;
 }
