@@ -47,14 +47,14 @@ RBLNode *RBLnewNode(int key, void *data);
 void RBLinsert(RBLTree *T, RBLNode *z);
 void RBLdelete(RBLTree *T, RBLNode *z);
 // testing methods
-int RBLsubtreeHasOnlyBlackLeaves(RBLTree *T, RBLNode *x);
 int RBLeachLeafIsBlack(RBLTree *T);
-int RBLsubtreeRedNodeHasBlackChildren(RBLTree *T, RBLNode *x);
 int RBLeachRedNodeHasBlackChildren(RBLTree *T);
-int RBLsubtreePathsHasEqualLength(RBLTree *T, RBLNode *x, int plen);
 int RBLeachRootLeafPathHasEqualLength(RBLTree *T);
 int RBLisRBLTree(RBLTree *T);
+int RBLisRBLTreeVerbose(RBLTree *T);
 // miscelanous
 void RBLwriteTree(RBLTree *T, char *filename);
+void RBLdestroy(RBLTree *T, RBLNode *x);
+void RBLtreeDestroy(RBLTree *T);
 
 #endif /* __RBLTREE_H */

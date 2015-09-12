@@ -376,6 +376,16 @@ int RBLeachRootLeafPathHasEqualLength(RBLTree *T) {
 }
 int RBLisRBLTree(RBLTree *T) {
     int ok = (T->root->color == BLACK); // root should be black
+    // Each leaf should be black
+    ok &= RBLeachLeafIsBlack(T);
+    // Each red node should have black children
+    ok &= RBLeachRedNodeHasBlackChildren(T);
+    // Each path from root to leaf shall have same # black nodes
+    ok &= RBLeachRootLeafPathHasEqualLength(T);
+    return ok;
+}
+int RBLisRBLTreeVerbose(RBLTree *T) {
+    int ok = (T->root->color == BLACK); // root should be black
     if (ok) printf("  OK: the root is black\n");
     else    printf("  FAIL: the root is red\n");
     // Each leaf should be black
@@ -443,4 +453,15 @@ void RBLwriteTree(RBLTree *T, char *filename) {
     RBLwriteTreeNode(fd, T, T->root);
     fprintf(fd, "}\n");
     fclose(fd);
+}
+
+void RBLdestroy(RBLTree *T, RBLNode *x) {
+    RBLdelete(T, x);
+    free(x);
+}
+
+void RBLtreeDestroy(RBLTree *T) {
+    while (!RBLisEmpty(T))
+        RBLdestroy(T, T->root);
+    free(T);
 }
