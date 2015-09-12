@@ -14,15 +14,19 @@ static int nilnum = 0;
 
 
 // Search tree operations
-RBLNode *RBLtreeSearch(RBLTree *T, RBLNode *x, int k) {
+RBLNode *RBLtreeSearchWorker(RBLTree *T, RBLNode *x, int k) {
     if (x == T->nil || k == x->key)
         return x;
     if (k < x->key)
-        return RBLtreeSearch(T, x->left, k);
+        return RBLtreeSearchWorker(T, x->left, k);
     else
-        return RBLtreeSearch(T, x->right, k);
+        return RBLtreeSearchWorker(T, x->right, k); 
 }
-RBLNode *RBLtreeSearchIterative(RBLTree *T, RBLNode *x, int k) {
+RBLNode *RBLtreeSearch(RBLTree *T, int k) {
+    return RBLtreeSearchWorker(T, T->root, k);
+}
+RBLNode *RBLtreeSearchIterative(RBLTree *T, int k) {
+    RBLNode *x = T->root;
     while (x != T->nil && k != x->key) {
         if (k < x->key)
             x = x->left;

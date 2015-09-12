@@ -35,8 +35,8 @@ typedef struct RBLTree {
 #define RBLisEmpty(T) ( (T)->root == (T)->nil )
 #define RBLhasData(x) ( (x)->data != NULL )
 // Search tree operations
-RBLNode *RBLtreeSearch(RBLTree *T, RBLNode *x, int k);
-RBLNode *RBLtreeSearchIterative(RBLTree *T, RBLNode *x, int k);
+RBLNode *RBLtreeSearch(RBLTree *T, int k);
+RBLNode *RBLtreeSearchIterative(RBLTree *T, int k);
 RBLNode *RBLtreeMinimum(RBLTree *T, RBLNode *x);
 RBLNode *RBLtreeMaximum(RBLTree *T, RBLNode *x);
 RBLNode *RBLtreeSuccessor(RBLTree *T, RBLNode *x);
