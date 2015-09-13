@@ -62,8 +62,8 @@ int arrayMax(int *keys, int n) {
 // http://stackoverflow.com/a/5249150
 #define getTimeDiff(te, ts) ((double)(te - ts) / CLOCKS_PER_SEC)
 #define setTime(t) do { t = clock(); } while (0)
-#define printExecTime(tr, tp) \
-    printf("\tExecution time (sec): %.5f (prep: %.5f, total: %.5f)\n", tr, tp, tr+tp)
+#define printExecTime(tr, tp) printf("\tExecution time (sec): %.5f " \
+    "(prep: %.5f, total: %.5f)\n", tr, tp, tr+tp)
 
 /**
  * Verbose test (with printing of tree) of most parts of implementation:
@@ -72,6 +72,7 @@ int arrayMax(int *keys, int n) {
  */
 int test_verbose(int nodes) {
     THEAD("Verbose run-test of insert+delete");
+    printf("\n");
 
     int ok = 1;
     printf("Creating empty RBL tree\n");
@@ -79,11 +80,12 @@ int test_verbose(int nodes) {
     int i, k;
     char *fname = malloc(sizeof(char)*25);
     // Insert #nodes nodes
+    printf("Inserting nodes into the tree:\n");
     for (i=0; i<nodes; i++) {
         snprintf(fname, 25, "rbltree_%05d.dot", i);
         RBLwriteTree(tree, fname);
         k = rand() % (nodes*10+13);
-        printf("Inserting a node with key %d\n", k);
+        printf("  inserting a node with key %d\n", k);
         RBLinsert(tree, RBLnewNode(k, &k));
         ok &= RBLisRBLTree(tree);
         if (!ok) printf("=> FAIL: is not RBL-tree\n");
@@ -461,9 +463,9 @@ int main(int argc, char **argv) {
     }
 
     printf("===============================\n");
-    printf("Performed %d tests:\n", testi);
-    printf("\t%3d failures\n", failures);
-    printf("\t%3d succeses\n", succeses);
+    printf("Performed %3d tests:\n", testi*runs);
+    printf("\t  %3d failures\n", failures);
+    printf("\t  %3d succeses\n", succeses);
 
     return (failures != 0); // returns 0 if no failures, 1 if at least one
 }
