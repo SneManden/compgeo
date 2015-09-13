@@ -5,9 +5,12 @@
 #include <assert.h>
 #include "../lib/rbltree.h"
 
-#define TB "\033[1m"
-#define TG "\033[32m"
+// bold, Red, Green, Yellow, Blue, End
+#define Tb "\033[1m"
 #define TR "\033[31m"
+#define TG "\033[32m"
+#define TY "\033[33m"
+#define TB "\033[34m"
 #define TE "\033[0m"
 
 #define NUM_TESTS_VERBOSE 1
@@ -17,24 +20,25 @@
 
 int USE_COLORS = 1;
 
-#define THEAD(desc) do {                                        \
-    if (USE_COLORS)                                             \
-        printf("\ttest: " TB "%-40s" TE, desc);                 \
-    else                                                        \
-        printf("\ttest: %-40s", desc);                          \
+#define THEAD(desc) do {                                            \
+    if (USE_COLORS)                                                 \
+        printf("\ttest: " Tb "%-40s" TE, desc);                     \
+    else                                                            \
+        printf("\ttest: %-40s", desc);                              \
 } while (0)
-#define TFOOT(ok) do {                                          \
-    if (USE_COLORS) {                                           \
-        if (ok) printf("\t      => " TG "SUCCESS" TE "\n");     \
-        else    printf("\t      => " TR "FAIL" TE "\n");        \
-    } else                                                      \
-        printf("\t      => %s\n", (ok?"SUCCESS":"FAIL"));       \
+#define TFOOT(ok) do {                                              \
+    if (USE_COLORS) {                                               \
+        if (ok==1)      printf("\t      => " TG "SUCCESS" TE "\n"); \
+        else if (ok==0) printf("\t      => " TR "FAIL" TE "\n");    \
+        else            printf("\t      => " TY "MANUAL" TE "\n");  \
+    } else                                                          \
+        printf("\t      => %s\n", (ok?"SUCCESS":"FAIL"));           \
 } while (0)
-#define TERROR(ok, message) do {                                \
-    if (!ok) printf("ERROR (%d): " message, __LINE__);          \
+#define TERROR(ok, message) do {                                    \
+    if (!ok) printf("ERROR (%d): " message, __LINE__);              \
 } while (0)
-#define TERRORARG(ok, message, ...) do {                        \
-    if (!ok)printf("ERROR (%d): " message,__LINE__,__VA_ARGS__);\
+#define TERRORARG(ok, message, ...) do {                            \
+    if (!ok)printf("ERROR (%d): " message,__LINE__,__VA_ARGS__);    \
 } while (0)
 
 
