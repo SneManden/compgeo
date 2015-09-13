@@ -173,10 +173,12 @@ void RBLdelete(RBLTree *T, RBLNode *z) {
         z->p->left = T->nil;
         // Sibling is replaced with parent
         RBLdeleteInternal(T, z->p);
+        free(z->p);
     } else {                        // z is a right child
         z->p->right = T->nil;
         // Sibling is replaced with parent
         RBLdeleteInternal(T, z->p);
+        free(z->p);
         // TODO: maybe have to do something here regarding key update
     }
 }
@@ -491,5 +493,6 @@ void RBLtreeDestroy(RBLTree *T) {
         RBLdestroy(T, x);
         x = y;
     }
+    free(T->nil);
     free(T);
 }

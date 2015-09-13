@@ -111,6 +111,7 @@ int test_verbose(int nodes) {
     }
     printf("Removed %d nodes\n", n);
     RBLtreeDestroy(tree);
+    free(fname);
 
     TFOOT(ok);
     return ok;
@@ -395,7 +396,7 @@ int main(int argc, char **argv) {
     if (!USE_COLORS)
         printf("Disabled: fancy colors for output.\n");
 
-    int *tests;
+    int *tests = NULL;
     printf("===============================\n");
     printf("Testing:\n");
     int runs = 0;
@@ -461,6 +462,8 @@ int main(int argc, char **argv) {
         failures += (runs - success);
         succeses += success;
     }
+    if (tests != NULL)
+        free(tests);
 
     printf("===============================\n");
     printf("Performed %3d tests:\n", testi*runs);
