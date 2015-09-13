@@ -7,6 +7,7 @@
 void RBLleftRotate(RBLTree *T, RBLNode *x);
 void RBLrightRotate(RBLTree *T, RBLNode *x);
 void RBLinsertFixup(RBLTree *T, RBLNode *z);
+void RBLdeleteInternal(RBLTree *T, RBLNode *z);
 void RBLtransplant(RBLTree *T, RBLNode *u, RBLNode *v);
 void RBLdeleteFixup(RBLTree *T, RBLNode *x);
 
@@ -162,33 +163,22 @@ void RBLinsert(RBLTree *T, RBLNode *z) {
 }
 
 void RBLdelete(RBLTree *T, RBLNode *z) {
-    RBLNode *x;
-    RBLNode *y = z;
-    RBLColor yOriginalColor = y->color;
-    if (z->left == T->nil) {
-        x = z->right;
-        RBLtransplant(T, z, z->right);
-    } else if (z->right == T->nil) {
-        x = z->left;
-        RBLtransplant(T, z, z->left);
-    } else {
-        y = RBLtreeMinimum(T, z->right);
-        yOriginalColor = y->color;
-        x = y->right;
-        if (y->p == z)
-            x->p = y;
-        else {
-            RBLtransplant(T, y, y->right);
-            y->right = z->right;
-            y->right->p = y;
-        }
-        RBLtransplant(T, z, y);
-        y->left = z->left;
-        y->left->p = y;
-        y->color = z->color;
+    // Maintain list-pointers
+    z->prev->next = z->next;
+    z->next->prev = z->prev;
+    // NOTE: z is always a leaf
+    if (z->p == T->nil) {
+        T->root = T->nil;
+    } else if (z == z->p->left) {   // z is a left child
+        z->p->left = T->nil;
+        // Sibling is replaced with parent
+        RBLdeleteInternal(T, z->p);
+    } else {                        // z is a right child
+        z->p->right = T->nil;
+        // Sibling is replaced with parent
+        RBLdeleteInternal(T, z->p);
+        // TODO: maybe have to do something here regarding key update
     }
-    if (yOriginalColor == BLACK)
-        RBLdeleteFixup(T, x);
 }
 
 
@@ -267,6 +257,35 @@ void RBLinsertFixup(RBLTree *T, RBLNode *z) {
         }
     }
     T->root->color = BLACK;
+}
+void RBLdeleteInternal(RBLTree *T, RBLNode *z) {
+    RBLNode *x;
+    RBLNode *y = z;
+    RBLColor yOriginalColor = y->color;
+    if (z->left == T->nil) {
+        x = z->right;
+        RBLtransplant(T, z, z->right);
+    } else if (z->right == T->nil) {
+        x = z->left;
+        RBLtransplant(T, z, z->left);
+    } else {
+        y = RBLtreeMinimum(T, z->right);
+        yOriginalColor = y->color;
+        x = y->right;
+        if (y->p == z)
+            x->p = y;
+        else {
+            RBLtransplant(T, y, y->right);
+            y->right = z->right;
+            y->right->p = y;
+        }
+        RBLtransplant(T, z, y);
+        y->left = z->left;
+        y->left->p = y;
+        y->color = z->color;
+    }
+    if (yOriginalColor == BLACK)
+        RBLdeleteFixup(T, x);
 }
 void RBLtransplant(RBLTree *T, RBLNode *u, RBLNode *v) {
     if (u->p == T->nil)
@@ -465,7 +484,12 @@ void RBLdestroy(RBLTree *T, RBLNode *x) {
 }
 
 void RBLtreeDestroy(RBLTree *T) {
-    while (!RBLisEmpty(T))
-        RBLdestroy(T, T->root);
+    RBLNode *x = RBLtreeMinimum(T, T->root),
+            *y;
+    while (!RBLisEmpty(T)) {
+        y = x->next;
+        RBLdestroy(T, x);
+        x = y;
+    }
     free(T);
 }
