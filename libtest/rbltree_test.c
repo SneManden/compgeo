@@ -352,6 +352,7 @@ int test_runTime_insert(int k, int nmin, int nmax) {
         free(tree);
     }
     printf("Done\n");
+    free(times);
 
     TFOOT(2);
     return 1;
