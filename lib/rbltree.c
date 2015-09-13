@@ -370,7 +370,7 @@ int RBLeachRedNodeHasBlackChildren(RBLTree *T) {
 int RBLsubtreePathsHasEqualLength(RBLTree *T, RBLNode *x, int plen) {
     if (RBLisLeaf(T, x))
         return 1;
-    int isBlack = RBhasColor(x, BLACK),
+    int isBlack = RBLhasColor(x, BLACK),
         left = RBLsubtreePathsHasEqualLength(T, x->left, plen+isBlack),
         right = RBLsubtreePathsHasEqualLength(T, x->right, plen+isBlack);
     return left == right;

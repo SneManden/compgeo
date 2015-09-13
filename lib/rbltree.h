@@ -9,9 +9,8 @@
  */
 
 #include "util.h"
-#include "rbtree.h"
 
-typedef RBColor RBLColor;
+typedef enum {RED, BLACK} RBLColor;
 
 typedef struct RBLNode {
     int key;
@@ -21,7 +20,7 @@ typedef struct RBLNode {
     struct RBLNode *right;
     struct RBLNode *prev;
     struct RBLNode *next;
-    RBColor color;
+    RBLColor color;
 } RBLNode;
 typedef struct RBLTree {
     struct RBLNode *root;
