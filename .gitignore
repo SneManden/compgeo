@@ -1,3 +1,4 @@
 *.o
 libtest/rbtree_test
 libtest/rbltree_test
+libtest/*.dot
