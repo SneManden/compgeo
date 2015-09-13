@@ -1,4 +1,5 @@
 #include <time.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -14,6 +15,7 @@
 #define TE "\033[0m"
 
 #define NUM_TESTS_VERBOSE 1
+#define NUM_TESTS_RUNTIME 1
 #define NUM_TESTS_NORMAL 8
 #define NODES_DEFAULT 25
 #define RUNSMAX 100
@@ -276,6 +278,82 @@ int test_linkedList(RBLTree *tree, int *keys, int n) {
     return ok;
 }
 
+/**
+ * RUNTIME TESTING:
+ *     - Meause time-diff for command K times with inputsize N, take average
+ *     - Repeat for different values of N
+ *     - Divide times by expected running time (e.g. log(N) for insertion)
+ *     - Plot times:
+ *         case [constant]: SUCCESS
+ *         case [not-constant]: FAIL
+ */
+#define NINC(n) 2*n
+typedef struct TMS {
+    int i;      // run i
+    int n;      // input size n
+    double t;   // time t
+} TMS;
+// Tests runtime of method: insert
+int test_runTime_insert(int k, int nmin, int nmax) {
+    THEAD("insert run-time");
+
+    printf("\ntest_runTime_insert(k=%d, nmin=%d, nmax=%d):\n", k, nmin, nmax);
+
+    clock_t t_start, t_end;
+    RBLTree *tree = NULL;
+    RBLNode *nodes = NULL;
+
+    int runs = log10(nmax-nmin)/1 + 1; // e.g: nmin=10, nmax=10⁶ => 6
+    printf("  runs=%d\n", runs);
+
+    TMS *times = calloc(2*k*runs, sizeof(TMS)); // {i,n,time}*k*runs
+    int z = 0;
+    for (int i=0; i<k; i++) {
+        printf("  Inserts (iteration %d of %d):\n", i+1, k);
+        tree = RBLinit();
+        // Create nodes
+        printf("    create %d nodes (key range: %d)\n", nmax, 2*nmax);
+        nodes = calloc(nmax+1, sizeof(RBLNode));
+        for (int i=0; i<nmax; i++)
+            nodes[i] = *RBLnewNode(rand() % (2*nmax), NULL);
+
+        // Insert nmin nodes
+        printf("    insert %d nodes initially\n", nmin);
+        for (int j=0; j<nmin; j++)
+            RBLinsert(tree, &nodes[j]);
+
+        printf("    Timing:\n");
+        for (int j=nmin; j<nmax+1; j*=10) {
+            // time start
+            printf("      RBLinsert(tree, &nodes[%d])\n", j);
+            setTime(t_start);
+            RBLinsert(tree, &nodes[j]);
+            setTime(t_end);
+            times[z++] = (TMS) { .i=i, .n=j, .t=getTimeDiff(t_end, t_start) };
+            printf("        Time: %.5f (raw data: {i=%d, n=%d, t=%.5f})\n",
+                times[z-1].t, i, j, times[z-1].t);
+            // time end
+
+            if (j*10 >= nmax+1)
+                break;
+            // Insert remaining nodes
+            printf("        insert %d nodes\n", (10*j-1-j-1));
+            for (int i=j+1; i<j*10-1; i++) {
+                // printf("        [RBLinsert(tree, &nodes[%d])]\n", i);
+                RBLinsert(tree, &nodes[i]);
+            }
+        }
+
+        // Delete nodes
+        free(nodes);
+        free(tree);
+    }
+    printf("Done\n");
+
+    TFOOT(2);
+    return 1;
+}
+
 
 void prepare_tests(RBLTree *tree, int *keys, int n) {
     RBLNode *x;
@@ -296,16 +374,22 @@ void cleanup_tests(RBLTree *tree, int *keys, int n) {
 int main(int argc, char **argv) {
     int testi = 0;
     int N = NODES_DEFAULT,
-        verbose = 0;
+        mode = 0;
     if (argc >= 2)
         N = atoi(argv[1]);
-    if (argc >= 3)
-        verbose = (strcmp(argv[2],"-v")==0 || !strcmp(argv[2],"-nv")==0);
+    if (argc >= 3) {
+        mode = mode | (strcmp(argv[2],"-v")==0)*1;
+        mode = mode | (strcmp(argv[2],"-r")==0)*2;
+        mode = mode | (strcmp(argv[2],"-d")==0)*0;
+    }
     if (argc >= 4)
         USE_COLORS = (strcmp(argv[3],"-c")==0 || !strcmp(argv[3],"-nc")==0);
     printf("Set: N=%d.\n", N);
-    if (verbose)
-        printf("Enabled: Verbose test.\n");
+    switch (mode) {
+        case 0: printf("Mode: normal\n");             break;
+        case 1: printf("Enabled: Verbose tests.\n");  break;
+        case 2: printf("Enabled: Run-time tests.\n"); break;
+    }
     if (!USE_COLORS)
         printf("Disabled: fancy colors for output.\n");
 
@@ -313,12 +397,8 @@ int main(int argc, char **argv) {
     printf("===============================\n");
     printf("Testing:\n");
     int runs = 0;
-    if (verbose) {
-        tests = calloc(NUM_TESTS_VERBOSE, sizeof(int));
-        // Verbose tests here
-        tests[0] = test_verbose(N);
-        testi = NUM_TESTS_VERBOSE;
-    } else {
+    switch (mode) {
+    case 0:
         tests = calloc(NUM_TESTS_NORMAL, sizeof(int));
         RBLTree *tree = NULL;
         int *keys = NULL;
@@ -357,6 +437,20 @@ int main(int argc, char **argv) {
                 break;
         }
         testi = NUM_TESTS_NORMAL;
+        break;
+    case 1:
+        tests = calloc(NUM_TESTS_VERBOSE, sizeof(int));
+        // Verbose tests here
+        tests[testi++] = test_verbose(N);
+        runs = 1;
+        break;
+    case 2:
+        tests = calloc(NUM_TESTS_RUNTIME, sizeof(int));
+        // Run-time tests here
+        tests[testi++] = test_runTime_insert(5, 10, N);
+
+        runs = 1;
+        break;
     }
     int failures=0, succeses=0;
     int success;
