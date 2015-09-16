@@ -12,18 +12,32 @@
 
 typedef enum {RED, BLACK} RBLColor;
 
-typedef struct RBLNode {
+typedef union RBLElm {
+    struct RBLNode *node;
+    struct RBLLeaf *leaf;
+} RBLElm;
+
+typedef struct RBLLeaf {
+    _Bool isLeaf;
     int key;
     void *data;
     struct RBLNode *p; // parent
-    struct RBLNode *left;
-    struct RBLNode *right;
-    struct RBLNode *prev;
-    struct RBLNode *next;
+    struct RBLLeaf *prev;
+    struct RBLLeaf *next;
+    RBLColor color;
+} RBLLeaf;
+
+typedef struct RBLNode {
+    _Bool isLeaf;
+    int key;
+    struct RBLNode *p; // parent
+    RBLElm left;
+    RBLElm right;
     RBLColor color;
 } RBLNode;
+
 typedef struct RBLTree {
-    struct RBLNode *root;
+    RBLElm root;
     RBLNode *nil;
 } RBLTree;
 
